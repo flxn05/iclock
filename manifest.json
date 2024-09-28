@@ -2,7 +2,7 @@
   "name": "iClock",
   "short_name": "iClock",
   "description": "This brings the Apple Clock App to your Android!",
-  "start_url": "iclock/index.html",
+  "start_url": "/iclock/index.html",
   "display": "standalone",
   "background_color": "#000000",
   "theme_color": "#007aff",
