@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="manifest" href="manifest.json">
+    <title>Clock App</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: black;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            width: 100vw;
+            height: 100vh;
+            border-radius: 30px;
+            box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start; /* Align content to top */
+            overflow: hidden;
+            padding: 20px;
+        }
+        .container div {
+            color: white;
+        }
+
+        .content {
+            padding: 20px;
+            text-align: center;
+            flex-grow: 1; /* Fills the remaining space above the tabs */
+            display: none;
+        }
+
+        .content.active {
+            display: block;
+        }
+
+        .tab {
+            display: flex;
+            justify-content: space-around;
+            background-color: #141414;
+            padding: 10px 0;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            white-space: nowrap;
+        }
+
+        .tab button {
+            background: none;
+            border: none;
+            color: #707070;
+            padding: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+
+        .tab button:hover {
+            color: #c4a77d;
+        }
+
+        .tab button.active {
+            color: #c98522;
+        }
+
+        h2 {
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: white;
+        }
+
+        .time-display {
+            font-size: 60px;
+            font-weight: 200;
+            margin: 20px 0;
+            color: #000;
+            letter-spacing: 1px;
+        }
+
+        .input-time-group {
+            display: flex;
+            justify-content: space-between;
+            margin: 20px 0;
+        }
+
+        .input-time-group input {
+            width: 30%;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            text-align: center;
+            font-size: 22px;
+            background-color: #f0f0f5;
+            color: #333;
+            font-weight: 400;
+            outline: none;
+        }
+
+        .input-time-group input:focus {
+            border-color: #007aff;
+            background-color: #fff;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+
+        .controls button {
+            width: 48%;
+            background-color: #f19c0a;
+            color: white;
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .controls button:hover {
+            background-color: #f19c0aaf;
+        }
+
+        #progress-bar {
+            width: 100%;
+            height: 8px;
+            background-color: #262529;
+            border-radius: 4px;
+            margin-top: 20px;
+            overflow: hidden;
+        }
+
+        #progress-fill {
+            height: 100%;
+            background-color: #fd9d1b;
+            width: 0%;
+            transition: width 1s;
+        }
+
+        #timer-over {
+            margin-top: 20px;
+            color: #30a2ff;
+            font-size: 18px;
+        }
+
+        #alarm-active {
+            margin-top: 20px;
+            color: #30a2ff;
+            font-size: 18px;
+        }
+
+        input[type="time"] {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            background-color: #f0f0f5;
+            color: #333;
+            font-size: 18px;
+            text-align: center;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- World Clock -->
+    <div id="worldClock" class="content active">
+        <h2 class="world-clock">World Clock</h2>
+        <div class="time-display" id="clock">loading ....</div>
+    </div>
+
+    <!-- Timer -->
+    <div id="timer" class="content">
+        <h2>Timer</h2>
+        <div class="time-display" id="timer-display">00:00:00</div>
+        <div id="timer-over"></div>
+        <div class="space" style="margin-top: 144px;"></div>
+        <div class="input-time-group">
+            <input type="number" id="hours" placeholder="HH" min="0">
+            <input type="number" id="minutes" placeholder="MM" min="0" max="59">
+            <input type="number" id="seconds" placeholder="SS" min="0" max="59">
+        </div>
+        <div class="controls">
+            <button onclick="startTimer()">Start</button>
+            <button onclick="resetTimer()">Reset</button>
+        </div>
+        <div class="space" style="margin-top: 24px;"></div>
+        <div id="progress-bar">
+            <div id="progress-fill"></div>
+        </div>
+
+    </div>
+
+    <!-- Stopwatch -->
+    <div id="stopwatch" class="content">
+        <h2>Stopwatch</h2>
+        <div class="time-display" id="stopwatch-display">00:00:00.00</div>
+        <div class="controls">
+            <button onclick="startStopwatch()">Start</button>
+            <button onclick="resetStopwatch()">Reset</button>
+        </div>
+    </div>
+
+    <!-- Alarm -->
+    <div id="alarm" class="content">
+        <h2>Alarms</h2>
+        <input type="time" class="input-time" id="alarm-time">
+        <div class="controls">
+            <button onclick="setAlarm()">Set Alarm</button>
+            <button onclick="stopAlarm()">Stop Alarm</button>
+        </div>
+        <div id="alarm-active"></div>
+        <audio id="alarm-sound" src="alarm.mp3" preload="auto"></audio>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tab">
+        <button class="tablinks active" onclick="openTab(event, 'worldClock')">World Clock</button>
+        <button class="tablinks" onclick="openTab(event, 'alarm')">Alarms</button>
+        <button class="tablinks" onclick="openTab(event, 'stopwatch')">Stopwatch</button>
+        <button class="tablinks" onclick="openTab(event, 'timer')">Timers</button>
+    </div>
+
+</div>
+
+<script>
+    // Tab control
+    function openTab(evt, tabName) {
+        var i, content, tablinks;
+        content = document.getElementsByClassName("content");
+        for (i = 0; i < content.length; i++) {
+            content[i].classList.remove("active");
+        }
+        tablinks = document.getElementsByClassName("tablinks");
+        for (i = 0; i < tablinks.length; i++) {
+            tablinks[i].classList.remove("active");
+        }
+        document.getElementById(tabName).classList.add("active");
+        evt.currentTarget.classList.add("active");
+    }
+
+    // World Clock
+    function updateClock() {
+        const clock = document.getElementById("clock");
+        const now = new Date();
+        clock.innerHTML = now.toLocaleTimeString();
+    }
+    setInterval(updateClock, 1000);
+
+    // Timer
+    let timerInterval;
+    let totalTime, remainingTime;
+
+    function startTimer() {
+        const hours = parseInt(document.getElementById("hours").value) || 0;
+        const minutes = parseInt(document.getElementById("minutes").value) || 0;
+        const seconds = parseInt(document.getElementById("seconds").value) || 0;
+        totalTime = hours * 3600 + minutes * 60 + seconds;
+        remainingTime = totalTime;
+
+        if (remainingTime > 0) {
+            timerInterval = setInterval(function () {
+                const display = document.getElementById("timer-display");
+                const h = Math.floor(remainingTime / 3600);
+                const m = Math.floor((remainingTime % 3600) / 60);
+                const s = remainingTime % 60;
+
+                display.innerHTML = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+                remainingTime--;
+
+                const progress = (totalTime - remainingTime) / totalTime * 100;
+                document.getElementById('progress-fill').style.width = `${progress}%`;
+
+                if (remainingTime < 0) {
+                    clearInterval(timerInterval);
+                    document.getElementById("timer-over").innerText = "Time's up!";
+                    const alarmSound = document.getElementById("alarm-sound");
+                    alarmSound.play();
+                }
+            }, 1000);
+        }
+    }
+
+    function resetTimer() {
+        clearInterval(timerInterval);
+        document.getElementById("timer-display").innerHTML = "00:00:00";
+        document.getElementById("timer-over").innerText = "";
+        document.getElementById('progress-fill').style.width = `0%`;
+    }
+
+    // Stopwatch
+    let stopwatchInterval;
+    let stopwatchTime = 0;
+
+    function startStopwatch() {
+        const display = document.getElementById("stopwatch-display");
+
+        // Send notification when stopwatch starts
+        if (navigator.serviceWorker) {
+            navigator.serviceWorker.ready.then(registration => {
+                registration.active.postMessage({ type: 'STOPWATCH_ACTIVE' });
+            });
+        }
+
+        stopwatchInterval = setInterval(function () {
+            stopwatchTime += 10; // 10 ms intervals for 1/100 sec accuracy
+            const hours = Math.floor(stopwatchTime / 3600000);
+            const minutes = Math.floor((stopwatchTime % 3600000) / 60000);
+            const seconds = Math.floor((stopwatchTime % 60000) / 1000);
+            const milliseconds = (stopwatchTime % 1000) / 10;
+
+            display.innerHTML = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}.${milliseconds.toString().padStart(2, '0')}`;
+        }, 10); // Update every 10 ms
+    }
+
+    function resetStopwatch() {
+        clearInterval(stopwatchInterval);
+        stopwatchTime = 0;
+        document.getElementById("stopwatch-display").innerHTML = "00:00:00.00";
+    }
+
+    // Alarm
+    let alarmTimeout;
+    function setAlarm() {
+        const alarmTime = document.getElementById("alarm-time").value;
+        if (alarmTime) {
+            const now = new Date();
+            const alarmDate = new Date(now);
+            const [hours, minutes] = alarmTime.split(':').map(Number);
+            alarmDate.setHours(hours);
+            alarmDate.setMinutes(minutes);
+            alarmDate.setSeconds(0);
+
+            const timeToAlarm = alarmDate.getTime() - now.getTime();
+            if (timeToAlarm >= 0) {
+                alarmTimeout = setTimeout(() => {
+                    alert("Alarm ringing!");
+                    const alarmSound = document.getElementById("alarm-sound");
+                    alarmSound.play();
+                    document.getElementById("alarm-active").innerText = `Alarm set for ${alarmTime}`;
+                }, timeToAlarm);
+            } else {
+                alert("Alarm time must be in the future!");
+            }
+        }
+    }
+
+    function stopAlarm() {
+        clearTimeout(alarmTimeout);
+        document.getElementById("alarm-active").innerText = "Alarm stopped.";
+    }
+
+    // Request notification permission
+    if ('Notification' in window) {
+        Notification.requestPermission().then(permission => {
+            if (permission === 'granted') {
+                console.log('Notification permission granted.');
+            } else {
+                console.log('Notification permission denied.');
+            }
+        });
+    }
+</script>
+
+<script>
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function () {
+            navigator.serviceWorker.register('sw.js').then(function (registration) {
+                console.log('ServiceWorker registration successful with scope: ', registration.scope);
+            }).catch(function (error) {
+                console.log('ServiceWorker registration failed: ', error);
+            });
+        });
+    }
+</script>
+
+</body>
+</html>
