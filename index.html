@@ -354,7 +354,6 @@
             const timeToAlarm = alarmDate.getTime() - now.getTime();
             if (timeToAlarm >= 0) {
                 alarmTimeout = setTimeout(() => {
-                    alert("Alarm ringing!");
                     const alarmSound = document.getElementById("alarm-sound");
                     alarmSound.play();
                     document.getElementById("alarm-active").innerText = `Alarm set for ${alarmTime}`;
